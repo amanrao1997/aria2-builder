@@ -23,7 +23,10 @@ EXPAT_BUILD() {
     ./configure \
         --prefix=$PREFIX \
         --enable-static \
-        --enable-shared
+        --disable-shared \
+        --without-examples \
+        --without-tests \
+        --without-docbook
     make install -j$(nproc)
 }
 
@@ -33,7 +36,8 @@ C_ARES_BUILD() {
     ./configure \
         --prefix=$PREFIX \
         --enable-static \
-        --disable-shared
+        --disable-shared \
+        --disable-tests
     make install -j$(nproc)
 }
 
@@ -42,7 +46,6 @@ OPENSSL_BUILD() {
     curl -Ls -o - "$OPENSSL" | tar zxvf - --strip-components=1
     ./Configure \
         --prefix=$PREFIX \
-        --openssldir=ssl \
         $OPENSSL_ARCH \
         no-asm \
         shared
@@ -55,20 +58,20 @@ SQLITE3_BUILD() {
     ./configure \
         --prefix=$PREFIX \
         --enable-static \
-        --enable-shared
+        --disable-shared
     make install -j$(nproc)
 }
 
 LIBSSH2_BUILD() {
     mkdir -p $BUILD_DIR/libssh2 && cd $BUILD_DIR/libssh2
     curl -Ls -o - "$LIBSSH2" | tar zxvf - --strip-components=1
-    rm -rf $PREFIX/lib/pkgconfig/libssh2.pc
     ./configure \
         --prefix=$PREFIX \
         --enable-static \
         --disable-shared \
-        CPPFLAGS="-I$PREFIX/include" \
-        LDFLAGS="-L$PREFIX/lib"
+        --with-openssl \
+        --without-libgcrypt \
+        --without-wincng
     make install -j$(nproc)
 }
 
@@ -78,7 +81,7 @@ JEMALLOC_BUILD() {
     ./configure \
         --prefix=$PREFIX \
         --enable-static \
-        --enable-shared=no \
+        --disable-shared \
         --disable-stats \
         --enable-prof
     make install -j$(nproc)
@@ -88,6 +91,9 @@ ARIA2_BUILD() {
     ARIA2_CODE_GET
     ./configure \
         --prefix=${ARIA2_PREFIX:-'/usr/loacl'} \
+        --with-libz \
+        --with-libcares \
+        --with-libexpat \
         --without-libxml2 \
         --without-libgcrypt \
         --with-openssl \
@@ -99,6 +105,6 @@ ARIA2_BUILD() {
         --with-jemalloc \
         --with-ca-bundle='/etc/ssl/certs/ca-certificates.crt' \
         ARIA2_STATIC=yes \
-        --enable-shared=no
+        --disable-shared
     make -j$(nproc)
 }
